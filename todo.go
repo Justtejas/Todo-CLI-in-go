@@ -79,3 +79,14 @@ func (t *Todo) Store(filename string) error {
 
 	return os.WriteFile(filename,data,0644)
 }
+
+
+func (t *Todo) Print()  {
+	for i, item := range *t {
+		prefix := " "
+		if item.Done {
+			prefix = "X"
+		}
+		println(i+1, prefix, item.Task)
+	}
+}
