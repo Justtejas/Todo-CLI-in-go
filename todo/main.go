@@ -1,9 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	todo "github.com/justtejas/Todo-CLI-in-go"
 )
@@ -28,12 +31,17 @@ func main() {
 
 	switch{
 	case *add:
-		todos.Add("Just a test")
-		err := todos.Store(todoFile)
+		task, err := getInput(os.Stdin, flag.Args()...)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			os.Exit(1)
+		}
+		todos.Add(task)
+		err = todos.Store(todoFile)
 		if err != nil {
 			fmt.Println("Error")
 			os.Exit(1)
-		} 
+		}
 	case *complete > 0:
 		if err := todos.Complete(*complete); err != nil {
 			fmt.Fprintln(os.Stderr, err.Error())
@@ -62,4 +70,21 @@ func main() {
 		fmt.Println("Invalid Command")
 		os.Exit(0)
 	}
+}
+
+func getInput(r io.Reader, args ...string) (string, error){
+	if len(args) > 0 {
+		return strings.Join(args, " "), nil 
+	}
+
+	buf := bufio.NewScanner(r)
+	buf.Scan()
+	if err := buf.Err(); err != nil {
+		return "", err
+	}
+	text := buf.Text()
+	if len(text) == 0 {
+		return "", fmt.Errorf("input cannot be blank")
+	}
+	return text, nil
 }
