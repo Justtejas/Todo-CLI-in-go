@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"time"
-
 	"github.com/alexeyco/simpletable"
 )
 
@@ -30,24 +29,21 @@ func (t *Todo)  Add(task string){
 }
 
 func (t *Todo) Complete(index int) error{
-	ls := *t
-	if index <= 0 || index > len(ls){
+	list := *t
+	if index <= 0 || index > len(list){
 		return errors.New("invalid index")
 	}
-
-	ls[index-1].CompletedAt = time.Now()
-	ls[index-1].Done = true
-
+	list[index-1].CompletedAt = time.Now()
+	list[index-1].Done = true
 	return nil
 }
 
 func (t *Todo) Delete(index int) error {
-	ls := *t
-	if index <= 0 || index > len(ls){
+	list := *t
+	if index <= 0 || index > len(list){
 		return errors.New("invalid index")
 	}
-
-	*t = append(ls[:index-1],ls[index:]...)
+	*t = append(list[:index-1],list[index:]...)
 	return nil
 }
 
@@ -60,16 +56,13 @@ func (t *Todo) Load(filename string) error{
 		}
 		return err
 	}
-
 	if len(file) == 0 {
 		return err
 	}
-
 	err = json.Unmarshal(file,t)
 	if err!=nil {
 		return err
 	}
-
 	return nil
 }
 
@@ -79,15 +72,12 @@ func (t *Todo) Store(filename string) error {
 	if err!= nil {
 		return err
 	}
-
 	return os.WriteFile(filename,data,0644)
 }
 
 
 func (t *Todo) Print()  {
-	
 	table := simpletable.New()
-
 	table.Header = &simpletable.Header{
 		Cells: []*simpletable.Cell{
 			{Align: simpletable.AlignCenter, Text: "Index"},
@@ -97,11 +87,9 @@ func (t *Todo) Print()  {
 			{Align: simpletable.AlignCenter, Text: "Completed At"},
 		},
 	}	
-
 	var cells [][]*simpletable.Cell
-
-	for idx, item := range *t {
-		idx++
+	for i, item := range *t {
+		i++
 		task := item.Task
 		done := "No"
 		if item.Done {
@@ -109,22 +97,18 @@ func (t *Todo) Print()  {
 			done = "Yes"
 		}
 		cells = append(cells, []*simpletable.Cell{
-			{Text: fmt.Sprintf("%d", idx)},
+			{Text: fmt.Sprintf("%d", i)},
 			{Text: task},
 			{Text: done},
 			{Text: item.CreatedAt.Format(time.RFC822)},
 			{Text: item.CompletedAt.Format(time.RFC822)},
 		})
 	}
-
 	table.Body = &simpletable.Body{Cells: cells}
-
 	table.Footer = &simpletable.Footer{Cells: []*simpletable.Cell{
 		{Align: simpletable.AlignCenter, Span: 5, Text: fmt.Sprintf("You have %d pending task(s)", t.CountPending())},
 	}}
-
-	table.SetStyle(simpletable.StyleUnicode)
-
+	table.SetStyle(simpletable.StyleCompactLite)
 	table.Println()
 }
 
@@ -135,6 +119,5 @@ func (t *Todo) CountPending() int {
 			total++
 		}
 	}
-
 	return total
 }
